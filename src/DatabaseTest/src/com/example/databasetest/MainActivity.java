@@ -19,12 +19,39 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        dbHelper = new MyDatabaseHelper(this, "BookStore.db", null, 2);
+        dbHelper = new MyDatabaseHelper(this, "BookStore.db", null, 3);
         Button createDatabase = (Button) findViewById(R.id.create_database);
         Button addData = (Button) findViewById(R.id.add_data);
         Button updateData = (Button) findViewById(R.id.update_data);
         Button deleteData = (Button) findViewById(R.id.delete_data);
         Button queryData = (Button) findViewById(R.id.query_data);
+        Button replaceData = (Button) findViewById(R.id.replace_data);
+        replaceData.setOnClickListener(new OnClickListener(){
+        	@Override
+        	public void onClick(View v){
+        		SQLiteDatabase db = dbHelper.getWritableDatabase();
+        		db.beginTransaction(); //开启事务
+        		try{
+        			db.delete("Book", null, null);
+        			if(true){
+        				//这里手动弹出一个异常，让事务失败
+        				//throw new NullPointerException();
+        			}
+        			ContentValues values = new ContentValues();
+        			values.put("name", "Game of Thrones");
+        			values.put("author", "George Maitin");
+        			values.put("pages",720);
+        			values.put("price", 20.85);
+        			db.insert("Book", null, values);
+        			db.setTransactionSuccessful(); //事务执行成功      			
+        			
+        		}catch(Exception e){
+        			e.printStackTrace();
+        		}finally{
+        			db.endTransaction();
+        		}
+        	}
+        });
         queryData.setOnClickListener(new OnClickListener(){
         	@Override
         	public void onClick(View v){
