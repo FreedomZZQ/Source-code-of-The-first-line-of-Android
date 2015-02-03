@@ -7,35 +7,42 @@
         android:id="@+id/create_database"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Create datebase"/>
+        android:text="Create database"
+         />
     
-    <Button
+    <Button 
         android:id="@+id/add_data"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Add data" />
+        android:text="Add data"
+        />
     
     <Button 
         android:id="@+id/update_data"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Update data" />
+        android:text="Update data"
+        />
     
     <Button 
         android:id="@+id/delete_data"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Delete data" />
+        android:text="Delete data"
+        />
     
     <Button 
         android:id="@+id/query_data"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Query data" />
+        android:text="Query data"
+        />
+    
     <Button 
         android:id="@+id/replace_data"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Replace data" />
+		android:text="Replace data"        
+        />
 
 </LinearLayout>
