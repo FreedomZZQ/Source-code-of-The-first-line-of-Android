@@ -3,8 +3,12 @@ package com.example.networktest;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.List;
+
+import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -12,17 +16,27 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.xml.sax.InputSource;
+import org.xml.sax.XMLReader;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserFactory;
 
 import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 
 public class MainActivity extends Activity implements OnClickListener {
@@ -61,21 +75,112 @@ public class MainActivity extends Activity implements OnClickListener {
     		public void run(){
     			try{
     				HttpClient httpClient = new DefaultHttpClient();
-    				HttpGet httpGet = new HttpGet("http://www.baidu.com");
+    				//HttpGet httpGet = new HttpGet("http://www.tekbroaden.com/get_data.xml");
+    				HttpGet httpGet = new HttpGet("http://www.tekbroaden.com/get_data.json");
     				HttpResponse httpResponse = httpClient.execute(httpGet);
     				if(httpResponse.getStatusLine().getStatusCode() == 200){
     					HttpEntity entity = httpResponse.getEntity();
     					String response = EntityUtils.toString(entity, "utf-8");
-    					Message message = new Message();
-    					message.what = SHOW_RESPONSE;
-    					message.obj = response.toString();
-    					handler.sendMessage(message);
+    					//Message message = new Message();
+    					//message.what = SHOW_RESPONSE;
+    					//message.obj = response.toString();
+    					//handler.sendMessage(message);
+    					
+    					//parseXMLWithPull(response);
+    					
+    					//parseXMLWithSAX(response);
+    					
+    					//parseJSONWithJSONObject(response);
+    					
+    					parseJSONWithGSON(response);
     				}
     			}catch(Exception e){
     				e.printStackTrace();
     			}
     		}
     	}).start();
+    }
+    
+    private void parseJSONWithGSON(String jsonData){
+    	Gson gson = new Gson();
+    	List<App> appList = gson.fromJson(jsonData, new TypeToken<List<App>>(){}.getType());
+    	for(App app : appList){
+    		Log.d("hehe", "id is " + app.getId());
+    		Log.d("hehe", "name is " + app.getName());
+    		Log.d("hehe", "version is " + app.getVersion());
+    	}
+    }
+    
+    private void parseJSONWithJSONObject(String jsonData){
+    	try{
+    		JSONArray jsonArray = new JSONArray(jsonData);
+    		for(int i = 0; i < jsonArray.length(); i++){
+    			JSONObject jsonObject = jsonArray.getJSONObject(i);
+    			String id = jsonObject.getString("id");
+    			String name = jsonObject.getString("name");
+    			String version = jsonObject.getString("version");
+    			Log.d("hehe", "id is " + id);
+    			Log.d("hehe", "name is " + name);
+    			Log.d("hehe", "version is " + version);
+    		}
+    	}catch(Exception e){
+    		e.printStackTrace();
+    	}
+    }
+    
+    private void parseXMLWithSAX(String xmlData){
+    	try{
+    		SAXParserFactory factory = SAXParserFactory.newInstance();
+    		XMLReader xmlReader = factory.newSAXParser().getXMLReader();
+    		ContentHandler handler = new ContentHandler();
+    		//将ContentHandler的实例设置到XMLReader中
+    		xmlReader.setContentHandler(handler);
+    		//开始执行解析
+    		xmlReader.parse(new InputSource(new StringReader(xmlData)));
+    	}catch(Exception e){
+    		e.printStackTrace();
+    	}
+    }
+    
+    private void parseXMLWithPull(String xmlData){
+    	try{
+    		XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
+    		XmlPullParser xmlPullParser = factory.newPullParser();
+    		xmlPullParser.setInput(new StringReader(xmlData));
+    		int eventType = xmlPullParser.getEventType();
+    		String id = "";
+    		String name = "";
+    		String version = "";
+    		while(eventType != XmlPullParser.END_DOCUMENT){
+    			String nodeName = xmlPullParser.getName();
+    			switch(eventType){
+    			//开始解析某个节点
+    			case XmlPullParser.START_TAG:{
+    				if("id".equals(nodeName)){
+    					id = xmlPullParser.nextText();
+    				}else if("name".equals(nodeName)){
+    					name = xmlPullParser.nextText();
+    				}else if("version".equals(nodeName)){
+    					version = xmlPullParser.nextText();
+    				}
+    				break;
+    			}
+    			case XmlPullParser.END_TAG:{
+    				if("app".equals(nodeName)){
+    					Log.d("hehe", "id is " + id);
+    					Log.d("hehe", "name is " + name);
+    					Log.d("hehe", "version is " + version);
+    				}
+    				break;
+    			}
+    			default:
+    				break;
+    			}
+    			eventType = xmlPullParser.next();
+    		}
+    	}catch(Exception e){
+    		e.printStackTrace();
+    	}
     }
     
     private void sendRequestWithHttpURLConnection(){
